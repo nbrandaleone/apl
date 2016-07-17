@@ -1,0 +1,43 @@
+Euler Problems
+
+Problem 1
+Find the sum of all multiples of 3 or 5 below 1000.
+{+/ ((0=3|⍳⍵)∨0=5|⍳⍵) / ⍳⍵} 999
+233168
+
+Problem 2
+By considering the terms in the Fibonacci sequence whose values do not exceed four million, find the sum of the even-valued terms.
++/0=2|((fib1⍣33)1)/((fib1⍣33)1)
+4613732
+
+where,
+  fib1 ← {⍵,+/¯2↑⍵}
+  fib2 ← {⊃(+/,⊃)⍣⍵⊢1}
+
+{(fib2 ⍵) >4e6: ⍵ ⋄ ∇⍵+1}1
+33
+
+(fib1⍣33)1
+1 1 2 3 5 8 13 21 34 55 89 144 233 377 610 987 1597 2584 4181 6765 10946 17711 28657 46368 75025 121393 196418 317811 514229 832040 1346269 2178309 3524578 5702887
+
+Problem 3
+The prime factors of 13195 are 5, 7, 13 and 29.
+
+What is the largest prime factor of the number 600851475143 ?
+
+Using Dyalog function
+factors←{⎕ML ⎕IO←1          ⍝ Prime factors of ⍵.
+    ⍵{                      ⍝ note: ⎕wa>(⍵*÷2)×2*4.
+        ⍵,(⍺÷×/⍵)~1         ⍝ append factor > sqrt(⍵).
+    }∊⍵{                    ⍝ concatenated,
+        (0=(⍵*⍳⌊⍵⍟⍺)|⍺)/⍵   ⍝ powers of each prime factor.
+    }¨⍬{                    ⍝ remove multiples:
+        nxt←⊃⍵              ⍝ next prime, and
+        msk←0≠nxt|⍵         ⍝ ... mask of non-multiples.
+        ∧/1↓msk:⍺,⍵         ⍝ all non multiples - finished.
+        (⍺,nxt)∇ msk/⍵      ⍝ sieve remainder.
+    }⍵{                     ⍝ from,
+        (0=⍵|⍺)/⍵           ⍝ divisors of ⍵ in:
+    }2,(1+2×⍳⌊0.5×⍵*÷2),⍵   ⍝ 2,3 5 .. sqrt(⍵),⍵
+}
+71 839 1471 6857

@@ -1,0 +1,173 @@
+⍝ Solution to the N-Queens problem, using a DFS search and custom attack function
+⍝ http://dfns.dyalog.com/n_trav.htm
+⍝ https://www.youtube.com/watch?v=DsZdfnlh_d0
+          
+⍝ ⍺⍺ or ⍵⍵, applies to left/right operand functions
+      ⊂{⍺⍺ ⍺⍺ ⍵}'hello'
+┌───────┐
+│┌─────┐│
+││hello││
+│└─────┘│
+└───────┘
+ ⍝ So, we apply twice the left operand "⊂" (enlcose) twice to the right argument vector     
+
+⍝ We create a 2 operand function for dfs.
+⍝ result ← ival (accm dfs subs) tree    Generic depth-first tree traversal.
+[dfs] traverses a [tree], applying left operand accumulating function
+[accm] between the current value of the accumulator  (initial value [ival])  and
+each node. Right operand function [subs] is required to  return a (possibly emp-
+ty) vector of subtrees for each node.
+
+dfs←{⊃∇⍨/⌽(⊂⍺ ⍺⍺ ⍵),⍺ ⍵⍵ ⍵}
+
+⍝ (1 2)(3 4), has seven nodes. 1 Root, 2 branches, 4 leaves. Search tree...
+⍝ Boolean zero of depth is root. Count nodes of tree, starting with 1 - Accumulator function on left.
+
+      0{⍺+1}dfs{(0=≡⍵)↓,⍵}(1 2)(3 4)
+7
+
+⍝ Counting just leaves
+      0{⍺+0=≡⍵}dfs{(0=≡⍵)↓,⍵}(1 2)(3 4)
+4
+
+⍝ Printing out leaves
+      ⍬{⍺,(0=≡⍵)↑⊂⍵}dfs{(0=≡⍵)↓,⍵}(1 2)(3 4)
+1 2 3 4
+
+
+atk←{∪∊(⊂⍵)+¯1 0 1×⊂⌽⍳⍴⍵}
+⍝ If queens are placed on {1,1}, {2,3}, {3,5}, what cols are attacked at row 4?
+⍝ Left vector is upper-left diagnonal, straight up, and upper-right diagonal, for each col.
+{(⊂⍵)+¯1 0 1×⊂⌽⍳⍴⍵} 1 3 5
+┌──────┬─────┬─────┐
+│¯2 1 4│1 3 5│4 5 6│
+└──────┴─────┴─────┘
+
+⍝ Create subtrees, each node giving what cols are available for placement
+subs←{(⊂⍵),¨(⍳⍴⊃⍺)~atk ⍵}
+
+⍝ An accumulator
+accm←{⍺,((⍴⍵)=⍴⊃⍺)↑⊂⍵}
+                          
+fmt←{⍵∘.=⍳⍴⍵}                                  
+queens←{fmt¨(↓0 ⍵⍴0)accm dfs subs ⍬}
+
+queens 4
+┌───────┬───────┐
+│0 1 0 0│0 0 1 0│
+│0 0 0 1│1 0 0 0│
+│1 0 0 0│0 0 0 1│
+│0 0 1 0│0 1 0 0│
+└───────┴───────┘
+
+
+
+⍝ The number of solutions for different board sizes.
+{⊃↑(↓1 ⍵⍴0){⍺+(⍴⍵)=⍴⊃⍺}dfs subs ⍬}¨0,⍳10
+0 1 0 0 2 10 4 40 92 352 724
+
+⍝ N-queens problem:
+
+    accm ← {⍺,(⍺⍺=⍴⍵)/⊂⍵}           ⍝ accumulated leaves.
+
+    subs←{⎕io←1                     ⍝ possible placements          \|/\  | \/| /
+        dd←⌽⍳⍴⍵                     ⍝ diagonal                      ⍟  \ | /\|/
+        ak←(⍵-dd),⍵,(⍵+dd)          ⍝ attacked cols in next row :       \|/  ⍟
+        ⍵∘,¨(⍳⍺⍺)~ak                ⍝ subnodes                           ⍟
+    }
+
+    ⍬(4 accm)trav(4 subs)⍬          ⍝ 4-queens solutions vector.
+ 2 4 1 3  3 1 4 2
+ 
+ 
+⍝ How do we eliminate boards that are the same in terms of relfection and rotations?
+
+
+This trace operator shows  what's happening by displaying accumulator ⍺ and node
+value ⍵ as a node is visited:
+
+    tc←{                    ⍝ Indented trace of node visit.
+        depth←¯2+⍴⎕SI       ⍝ depth of recursion
+        tab←∊depth⍴⊂'·   '  ⍝ indentation vector
+        ⎕←tab,⍕⍺ ⍵          ⍝ display of ⍺ and ⍵
+        ⍺ ⍺⍺ ⍵              ⍝ node visit.
+    }
+
+Also see "dft", for display function tree.
+Operator [dft] returns a character matrix representation of its function operand
+[fn].
+
+A trace of generating the first 5 fibonacci numbers
+0 {⍺+⍵×⍵∊0 1}tc dfs {(⍵-2 1)~-2 1} 5
+0 5
+·   0 3
+·   ·   0 1
+·   ·   ·   1 0
+·   ·   1 2
+·   ·   ·   1 0
+·   ·   ·   1 1
+·   ·   ·   ·   2 0
+·   2 4
+·   ·   2 2
+·   ·   ·   2 0
+·   ·   ·   2 1
+·   ·   ·   ·   3 0
+·   ·   3 3
+·   ·   ·   3 1
+·   ·   ·   ·   4 0
+·   ·   ·   4 2
+·   ·   ·   ·   4 0
+·   ·   ·   ·   4 1
+·   ·   ·   ·   ·   5 0
+5
+
+A trace of searching a simple tree (7 nodes, 2 branches, 4 leaves)
+      ⍬{⍺,(0=≡⍵)↑⊂⍵}tc dfs {(0=≡⍵)↓,⍵}(1 2)(3 4)
+    1 2  3 4  
+·      1 2 
+·   ·      1
+·   ·    1  2
+·    1 2  3 4 
+·   ·    1 2  3
+·   ·    1 2 3  4
+1 2 3 4
+
+
+(↓0 4⍴0)accm tc dfs subs ⍬
+    
+·      1 
+·   ·      1 3 
+·   ·      1 4 
+·   ·   ·      1 4 2 
+·      2 
+·   ·      2 4 
+·   ·   ·      2 4 1 
+·   ·   ·   ·      2 4 1 3 
+·     2 4 1 3   3 
+·   ·     2 4 1 3   3 1 
+·   ·   ·     2 4 1 3   3 1 4 
+·   ·   ·   ·     2 4 1 3   3 1 4 2 
+·     2 4 1 3  3 1 4 2   4 
+·   ·     2 4 1 3  3 1 4 2   4 1 
+·   ·   ·     2 4 1 3  3 1 4 2   4 1 3 
+·   ·     2 4 1 3  3 1 4 2   4 2 
+┌───────┬───────┐
+│2 4 1 3│3 1 4 2│
+└───────┴───────┘
+
+Technical notes:
+
+The coding of the body of trav is surprisingly simple:
+
+    ⊃∇⍨/⌽(⊂⍺ ⍺⍺ ⍵),⍺ ⍵⍵ ⍵
+     │└┬┘  └─┬──┘  └─┬──┘
+     │ │     │       └──── (possibly empty) vector of sub-trees.
+     │ │     └──────────── new value of accumulator.
+     │ └────────────────── left-to-right reduction →foldl←
+     └──────────────────── recursive call on (⍺⍺ trav ⍵⍵).
+
+At first sight, the code appears to be missing a test to back out of the recurs-
+ion after a leaf-node has been visited.  In fact, this occurs automatically:  if
+the vector of sub-trees (⍺ ⍵⍵ ⍵) is empty, the  sub-expression: (⊂⍺ ⍺⍺ ⍵),⍺ ⍵⍵ ⍵
+is a 1-item vector and so the reduction ∇⍨/ passes it along  as  result  without
+applying its operand function and thus avoiding the recursive call on trav. 

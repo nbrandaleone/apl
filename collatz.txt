@@ -1,0 +1,33 @@
+⍝ The Collatz conjecture. All sequences terminate at 1
+⍝ If the number is even, cut it in half.
+⍝ If the number is odd, triple it and add one.
+⍝ Repeat...
+
+scalar←{
+    {                  ⍝ scalar function
+        2|⍵:1+3×⍵      ⍝ odd
+        ⍵÷2            ⍝ even
+    }⍣{⍺=1}¨⍵         ⍝ applied under each
+}
+
+vector←{
+    {                ⍝ vector function
+        p←2|⍵        ⍝ parity
+        u←⍵÷2-p      ⍝ half of evens
+        v←p+u×1+2×p  ⍝ 1+3× odds
+        ∪v~1         ⍝ without 1s and duplication
+    }⍣{⍺≡⍬}⍵         ⍝ Applied to whole vector
+}
+
+⍝ Working with vectors is much faster than working on individual elements.
+⍝ Also, notice how we embed logical boolean values into the data?!  Very clever!
+
+      vector time ⍳1e6
+00.60
+      scalar time ⍳1e6
+01:45.85
+
+Counting brace depth
+ ⍝ Array thinking:
+      brace2←{(+\⍵='(')-(+\⍵=')')}
+      brace3←{+\1 ¯1 0['()'⍳⍵]}

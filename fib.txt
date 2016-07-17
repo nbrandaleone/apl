@@ -1,0 +1,12 @@
+Some interesting ways to fibonacci series
+
+fib1 ← {⍵,+/¯2↑⍵}
+(fib1 ⍣ 10) 1
+1 1 2 3 5 8 13 21 34 55 89
+
+fib2 ← {⊃(+/,⊃)⍣⍵⊢1}
+
+fib2 10
+89
+
+fib3←{fib1⍣⍵⊢1}

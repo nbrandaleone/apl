@@ -1,0 +1,19 @@
+euclid←{
+⍝ Euclidean algorithm for finding GCD of two numbers
+⍝ "6 euclid 4" returns 2    
+    ⍵=0:|⍺
+    ⍵ ∇ ⍵|⍺
+⍝ ∇ calls function recursively
+}
+
+quadratic←{
+⍝ Real roots of quadratic equation
+    a b c←⍵
+    d←(b*2)-4×a×c
+
+    d<0:⍬
+    d=0:-b÷2×a
+    d>0:(-b+¯1 1×d*0.5)÷2×a
+}
+
+sqrt←{n n*0.5}
